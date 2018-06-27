@@ -1,0 +1,391 @@
+macro _slt(result, *v1, *v2)
+{
+    if _lt(v1, 128) {
+        if _lt(v2, 128) {
+            _lt(result, v1, v2);
+        } else {
+            result = 0;
+        }
+    } else {
+        _lt(result, v2, v1);
+    }
+}
+
+
+macro array_write(array, pos, val)
+{
+    array.0 = val;
+    array.1 = pos;
+    array.2 = 0;
+    "<array.1>";
+    '[';
+        '<<<[-]<[-]<[-]+>>>>>';
+        '>[<<<<+>>>>-]<';
+        '-[<<<<+>>>>-]';
+        '<<<<';
+    ']';
+    '<<[-]>>';
+    '>[<<<+>>>-]<';
+    '<';
+    '[';
+        '>>>>';
+    ']';
+    '>';
+}
+
+
+macro array_read(array, pos, val)
+{
+    array.0 = 0;
+    array.1 = pos;
+    array.2 = 0;
+    "<array.1>";
+
+    '[';
+        '<<<[-]<[-]<[-]+>>>>>';
+        '-[<<<<+>>>>-]';
+        '<<<<';
+    ']';
+    '<<[->>+>+<<<]>>';
+    '[-<<+>>]';
+    '<';
+    '[';
+        '>>[->>>>+<<<<]<<';
+        '>>>>';
+    ']';
+    '>';
+    val = array.0;
+}
+
+
+macro bubble_sort(array, *maxidx, ord)
+{
+    var keep_running = maxidx;
+    maxidx -= 1;
+    while (keep_running)
+    {
+        var i0, i1;
+
+        keep_running = 0;
+
+        i0 = 0;
+        i1 = 1;
+
+        while _neq(i0, maxidx) {
+            var tmp1 = 0;
+            var tmp2 = 0;
+
+            array_read(array, i0, tmp1);
+            array_read(array, i1, tmp2);
+
+            if (ord) {
+                if _slt(tmp2, tmp1) {
+                        array_write(array, i1, tmp1);
+                        array_write(array, i0, tmp2);
+                        keep_running = 1;
+                    }
+            } else {
+                if _slt(tmp1, tmp2) {
+                    array_write(array, i1, tmp1);
+                    array_write(array, i0, tmp2);
+                    keep_running = 1;
+                }
+            }
+            i0, i1 += 1;
+        }
+    }
+}
+
+
+macro soutnum(*n)
+{
+    var c128 = 128;
+    var d1, d2, d3;
+
+    if _lt(n, c128) {
+    } else {
+        out(45);
+        n -= c128;
+        var tmp = n;
+        n = c128;
+        n -= tmp;
+    }
+    _mod(d1, n, 10); _div(n, n, 10);
+    _mod(d2, n, 10); _div(n, n, 10);
+    _mod(d3, n, 10); _div(n, n, 10);
+    if (d3) {
+        d3 += 48; out(d3);
+        d2 += 48; out(d2);
+        d1 += 48; out(d1);
+    }
+    else
+        if (d2) {
+            d2 += 48; out(d2);
+            d1 += 48; out(d1);
+        } else {
+            d1 += 48; out(d1);
+        }
+}
+
+
+macro sinnum(rez) {
+    rez = 0;
+    var tmp;
+    var keep_running = 1;
+    var minus = 0;
+    while (keep_running) {
+        in(tmp);
+        if _eq(tmp, 10) {
+             keep_running = 0;
+        } else if _eq(tmp, 32) {
+            keep_running = 0;
+        } else {
+            if _eq(tmp, 45) {
+                minus = 1;
+            } else {
+                tmp -= 48;
+                _mul(rez, rez, 10);
+                rez += tmp;
+            }
+        }
+    }
+    var c256 = 256;
+    if (minus) if (rez) {
+        tmp = rez;
+        rez = c256;
+        rez -= tmp;
+    }
+}
+
+
+macro in_arr(size, arr) {
+    sinnum(size);
+    var i = 0;
+    while _neq(i, size) {
+        var tmp = 0;
+        sinnum(tmp);
+        array_write(arr, i, tmp);
+        i += 1;
+    }
+}
+
+
+macro out_arr(size, arr) {
+    var i = 0;
+    out(91);
+    while _neq(i, size) {
+        var tmp;
+        array_read(arr, i, tmp);
+        soutnum(tmp);
+        i += 1;
+        if _neq(i, size) {
+            out(44);
+            out(32);
+        }
+    }
+    out(93);
+    out(10);
+}
+
+
+macro get_eq_cnt(eq, arr, size, ndx) {
+    eq = 1;
+
+    var comp = 0;
+    array_read(arr, ndx, comp);
+
+    var eq_ndx = ndx;
+    eq_ndx += eq;
+    while _lt(eq_ndx, size) {
+        var tmp = 0;
+        array_read(arr, eq_ndx, tmp);
+        if _eq(tmp, comp)
+            eq += 1;
+        eq_ndx += 1;
+    }
+}
+
+
+macro solve(cnt, x, sa, a, sb, b, sc, c) {
+    bubble_sort(a, sa, 1);
+    bubble_sort(b, sb, 1);
+    bubble_sort(c, sc, 0);
+    var ia = 0;
+    while _neq(ia, sa) {
+        var a_eq_cnt;
+        get_eq_cnt(a_eq_cnt, a, sa, ia);
+        var ib = 0; var ic = 0;
+        var keep_running = 1;
+        while (keep_running) {
+            var val = 0;
+            var tmp;
+            tmp = 0;
+            array_read(a, ia, tmp);
+            val += tmp;
+            tmp = 0;
+            array_read(b, ib, tmp);
+            val += tmp;
+            tmp = 0;
+            array_read(c, ic, tmp);
+            val += tmp;
+
+            //outnum(ia); out(32); outnum(ib); out(32);
+            //outnum(ic); out(32); outnum(val); out(10);
+
+            if _eq(val, x) {
+                var b_eq_cnt;
+                get_eq_cnt(b_eq_cnt, b, sb, ib);
+                var c_eq_cnt;
+                get_eq_cnt(c_eq_cnt, c, sc, ic);
+                var add = 1;
+                _mul(add, add, a_eq_cnt);
+                _mul(add, add, b_eq_cnt);
+                _mul(add, add, c_eq_cnt);
+                cnt += add;
+                ib += b_eq_cnt;
+                ic += c_eq_cnt;
+            } else if _slt(val, x) {
+                ib += 1;
+            } else {
+                ic += 1;
+            }
+            var eb = 0; _lt(eb, ib, sb);
+            var ec = 0; _lt(ec, ic, sc);
+            _and(keep_running, eb, ec);
+        }
+        ia += 1;
+    }
+}
+
+
+macro print(x, sa, a, sb, b, sc, c) {
+    // perl genascii.pl 'input:
+    var char = 0;
+    char +=105; out(char); char +=  5; out(char); char +=  2; out(char);
+    char +=  5; out(char); char -=  1; out(char); char -= 58; out(char);
+
+    out(10);
+
+    out(120); out(58); out(32);
+    soutnum(x); out(10);
+
+    out(97); out(58); out(32);
+    out_arr(sa, a);
+
+    out(98); out(58); out(32);
+    out_arr(sb, b);
+
+    out(99); out(58); out(32);
+    out_arr(sc, c);
+}
+
+
+macro print_cnt(cnt) {
+    // perl genascii.pl 'result: '
+    var char = 0;
+    char +=114; out(char); char -= 13; out(char); char += 14; out(char);
+    char +=  2; out(char); char -=  9; out(char); char +=  8; out(char);
+    char -= 58; out(char); char -= 26; out(char);
+
+    outnum(cnt);
+
+    out(10);
+}
+
+
+macro help(){
+    var char;
+    // perl genascii.pl '3SUMx3 mod 256'
+    char = 0;
+    char += 51; out(char); char += 32; out(char); char +=  2; out(char);
+    char -=  8; out(char); char += 43; out(char); char -= 69; out(char);
+    char -= 19; out(char); char += 77; out(char); char +=  2; out(char);
+    char -= 11; out(char); char -= 68; out(char); char += 18; out(char);
+    char +=  3; out(char); char +=  1; out(char);
+
+    out(10);
+
+    // perl genascii.pl 'number format: [-]?[0-9]+[ \\'
+     char = 0;
+    char +=110; out(char); char +=  7; out(char); char -=  8; out(char);
+    char -= 11; out(char); char +=  3; out(char); char += 13; out(char);
+    char -= 82; out(char); char += 70; out(char); char +=  9; out(char);
+    char +=  3; out(char); char -=  5; out(char); char -= 12; out(char);
+    char += 19; out(char); char -= 58; out(char); char -= 26; out(char);
+    char += 59; out(char); char -= 46; out(char); char += 48; out(char);
+    char -= 30; out(char); char += 28; out(char); char -= 43; out(char);
+    char -=  3; out(char); char += 12; out(char); char += 36; out(char);
+    char -= 50; out(char); char += 48; out(char); char -= 59; out(char);
+    char += 60; out(char);
+    // perl genascii.pl 'n]'
+    char = 0;
+    char +=110; out(char); char -= 17; out(char);
+
+    out(10);
+
+    // perl genascii.pl 'array format: n item_0 ... item_n'
+    char = 0;
+    char += 97; out(char); char += 17; out(char); char +=  0; out(char);
+    char -= 17; out(char); char += 24; out(char); char -= 89; out(char);
+    char += 70; out(char); char +=  9; out(char); char +=  3; out(char);
+    char -=  5; out(char); char -= 12; out(char); char += 19; out(char);
+    char -= 58; out(char); char -= 26; out(char); char += 78; out(char);
+    char -= 78; out(char); char += 73; out(char); char += 11; out(char);
+    char -= 15; out(char); char +=  8; out(char); char -= 14; out(char);
+    char -= 47; out(char); char -= 16; out(char); char += 14; out(char);
+    char +=  0; out(char); char +=  0; out(char); char -= 14; out(char);
+    char += 73; out(char); char += 11; out(char); char -= 15; out(char);
+    char +=  8; out(char); char -= 14; out(char); char += 15; out(char);
+
+    out(10);
+
+    // perl genascii.pl 'input: x arr_a arr_b arr_c'
+    char = 0;
+    char +=105; out(char); char +=  5; out(char); char +=  2; out(char);
+    char +=  5; out(char); char -=  1; out(char); char -= 58; out(char);
+    char -= 26; out(char); char += 88; out(char); char -= 88; out(char);
+    char += 65; out(char); char += 17; out(char); char +=  0; out(char);
+    char -= 19; out(char); char +=  2; out(char); char -= 65; out(char);
+    char += 65; out(char); char += 17; out(char); char +=  0; out(char);
+    char -= 19; out(char); char +=  3; out(char); char -= 66; out(char);
+    char += 65; out(char); char += 17; out(char); char +=  0; out(char);
+    char -= 19; out(char); char +=  4; out(char);
+
+    out(10);
+
+    // perl genascii.pl 'sample input: "2 3 0 -1 0 1 1 2 1 2 "'
+    char = 0;
+    char +=115; out(char); char -= 18; out(char); char += 12; out(char);
+    char +=  3; out(char); char -=  4; out(char); char -=  7; out(char);
+    char -= 69; out(char); char += 73; out(char); char +=  5; out(char);
+    char +=  2; out(char); char +=  5; out(char); char -=  1; out(char);
+    char -= 58; out(char); char -= 26; out(char); char +=  2; out(char);
+    char += 16; out(char); char -= 18; out(char); char += 19; out(char);
+    char -= 19; out(char); char += 16; out(char); char -= 16; out(char);
+    char += 13; out(char); char +=  4; out(char); char -= 17; out(char);
+    char += 16; out(char); char -= 16; out(char); char += 17; out(char);
+    char -= 17; out(char); char += 17; out(char); char -= 17; out(char);
+    char += 18; out(char); char -= 18; out(char); char += 17; out(char);
+    char -= 17; out(char); char += 18; out(char); char -= 18; out(char);
+    char +=  2; out(char);
+
+    out(10);
+}
+
+
+macro main() {
+    // 47 = -1 + 4 * 12 (=> 12 == max_arr_size)
+    var x, sa, a.47, sb, b.47, sc, c.47;
+    var cnt = 0;
+    help();
+    sinnum(x);
+    in_arr(sa, a);
+    in_arr(sb, b);
+    in_arr(sc, c);
+    print(x, sa, a, sb, b, sc, c);
+    solve(cnt, x, sa, a, sb, b, sc, c);
+    print_cnt(cnt);
+}
+
+
+main();
